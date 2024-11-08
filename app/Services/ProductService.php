@@ -13,9 +13,11 @@ class ProductService {
         $this->model = $poduct;
     }
 
-    public function getlist()
+    public function getList()
     {
-        return Product::all();
+        return $this->model
+            ->where('status', 1)
+            ->orderBy('created_at', 'DESC');
     }
 
     public function create($params){
@@ -38,11 +40,6 @@ class ProductService {
             return false;
         }
     }
-    public function delete($id){
-        $product = Product::findOrFail($id);
-        return $product->delete();
-    }
-
     public function restore($id){
         $product = Product::withTrashed()->findOrFail($id);
         if($product->trashed()){

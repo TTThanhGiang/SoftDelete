@@ -18,57 +18,65 @@ use Illuminate\Http\Response;
 class ProductController extends Controller
 {
     protected $productService;
+
     public function __construct(ProductService $productService)
     {
         $this->productService = $productService;
     }
 
-    public function store(CreateRequest $createRequest): JsonResponse|ProductResource{
-        
-        $request = $createRequest->validated();
-        $result = $this->productService->create($request);
+    public function index(Request $request)
+    {
+        $result = $this->productService->getList();
 
-        if($result){
-            return new ProductResource($result);
+        return ProductResource::apiPaginate($result, $request);
+    }
+
+    public function store(CreateRequest $createRequest)
+    {
+        $requests = $createRequest->validated();
+
+        $result = $this->productService->create($requests);
+
+        if ($result) {
+            // return new ProductResource($result);
+            return response()->api_success("Created product success", $result);
         }
 
         return response()->json([
-            'msg'=> 'Them moi loi'
+            'msg' => 'them moi loi'
         ]);
     }
-    public function show(Product $product){
+
+    public function show(Product $product)
+    {
         return new ProductResource($product);
     }
 
-    public function showlist(){
-        $products = $this->productService->getlist();
-        return ProductResource::collection($products);
-    }
-    public function update(Product $product, UpdateRequest $updateRequest){
+    public function update(Product $product, UpdateRequest $updateRequest)
+    {
         $request = $updateRequest->validated();
+
         $result = $this->productService->update($product, $request);
-        if($result){
+
+        if ($result) {
             return response()->json([
-                'msg'=> 'Cap nhat thanh cong'
+                'msg' => 'Cap nhat thanh cong'
             ]);
         }
 
         return response()->json([
-            'msg'=> 'Cap nhat loi'
+            'msg' => 'cap nhat loi'
         ]);
     }
-    public function delete(Product $product, DeleteRequest $deleteRequest){
-        $request = $deleteRequest->validated();
-        $result = $this->productService->delete($product->id);
-        if($result){
-            return response()->json([
-                'msg'=> 'Xoa thanh cong'
-            ]);
-        }
+
+    public function destroy(Product $product)
+    {
+        $product->delete();
 
         return response()->json([
-            'msg'=> 'Xoa nhat loi'
-        ]);
+            'msg'=> 'Deleted success',
+            'data' => true
+        ], 200);
     }
 
     public function restore($id){
